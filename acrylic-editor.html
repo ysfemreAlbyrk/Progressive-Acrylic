@@ -1,0 +1,1799 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Progressive Blur Editor</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * { box-sizing: border-box; }
+    body { 
+      background: #1a1a1a; 
+      color: #e0e0e0; 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+      margin: 0; 
+      padding: 20px;
+      min-height: 100vh;
+    }
+    i{
+        margin-right: 5px;
+
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    
+    .header h1 {
+      font-size: 2rem;
+      font-weight: 500;
+      margin: 0;
+      color: #ffffff;
+    }
+    
+    .editor-container {
+      display: grid;
+      grid-template-columns: 700px 1fr;
+      gap: 30px;
+      max-width: 1200px;
+      margin: 0 auto;
+      align-items: start;
+    }
+    
+    .preview-section {
+      position: sticky;
+      top: 20px;
+    }
+    
+    .container { 
+      position: relative; 
+      width: 700px; 
+      height: 450px; 
+      background-size: cover;
+      background-position: center;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid #333;
+      background-image: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=700&q=80');
+    }
+    
+    .blur-overlay {
+      position: absolute; 
+      left: 0; 
+      top: 0; 
+      width: 100%; 
+      height: 100%;
+      pointer-events: none;
+    }
+    
+    .image-selector {
+      display: flex;
+      gap: 8px;
+      margin: 15px 0;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .image-thumb {
+      width: 60px;
+      height: 40px;
+      border-radius: 4px;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: border-color 0.2s;
+      background-size: cover;
+      background-position: center;
+    }
+    
+    .image-thumb:hover {
+      border-color: #666;
+    }
+    
+    .image-thumb.active {
+      border-color: #0066cc;
+    }
+    
+    .upload-section {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-left: 15px;
+      padding-left: 15px;
+      border-left: 1px solid #333;
+    }
+    
+    .upload-btn {
+      position: relative;
+      background: #2a2a2a !important;
+      border: 1px solid #444 !important;
+      padding: 8px 16px !important;
+      font-size: 0.85rem !important;
+      cursor: pointer;
+      overflow: hidden;
+      border-radius: 4px;
+    }
+    
+    .upload-btn:hover {
+      background: #333 !important;
+    }
+    
+    .upload-btn input[type="file"] {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+    }
+    
+    .controls-section {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    
+    .control-panel {
+      background: #222;
+      border: 1px solid #333;
+      border-radius: 6px;
+      padding: 20px;
+    }
+    
+    .panel-title {
+      font-size: 1.1rem;
+      font-weight: 500;
+      margin: 0 0 15px 0;
+      color: #fff;
+    }
+    
+    .dual-panel {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    
+    .sub-panel {
+      padding: 0;
+    }
+    
+    .sub-title {
+      font-size: 0.95rem;
+      font-weight: 500;
+      margin: 0 0 12px 0;
+      color: #ccc;
+      border-bottom: 1px solid #333;
+      padding-bottom: 6px;
+    }
+    
+    .control-group {
+      margin: 15px 0;
+    }
+    
+    .control-group label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 400;
+      font-size: 0.9rem;
+      color: #ccc;
+    }
+    
+    .dropdown-label {
+        display: flex !important;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        align-content: center;
+        justify-content: space-between;
+    }
+    
+    .slider-container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    input[type="range"] {
+      flex: 1;
+      height: 4px;
+      background: #333;
+      border-radius: 2px;
+      outline: none;
+      appearance: none;
+    }
+    
+    input[type="range"]::-webkit-slider-thumb {
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      background: #0066cc;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+    
+    input[type="range"]::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+      background: #0066cc;
+      border-radius: 50%;
+      cursor: pointer;
+      border: none;
+    }
+    
+    .value-display {
+      min-width: 40px;
+      text-align: center;
+      background: #333;
+      padding: 4px 8px;
+      border-radius: 3px;
+      font-size: 0.85rem;
+      color: #fff;
+    }
+    
+    .button-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    
+    .button-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    
+    button { 
+      padding: 8px 16px; 
+      background: #2a2a2a; 
+      color: #e0e0e0; 
+      border: 1px solid #444;
+      border-radius: 4px; 
+      cursor: pointer;
+      transition: background-color 0.2s;
+      font-weight: 400;
+      flex: 1;
+    }
+    
+    button:hover { 
+      background: #333;
+    }
+    
+    button.active { 
+      background: #0066cc;
+      border-color: #0066cc;
+      color: #fff;
+    }
+    
+    /* Bezier Editor Styles */
+    .bezier-editor {
+      background: #222;
+      border: 1px solid #333;
+      border-radius: 6px;
+      padding: 20px;
+    }
+    
+    .bezier-layout {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+    
+    .bezier-canvas-section {
+      display: flex;
+      justify-content: center;
+    }
+    
+    .bezier-controls-section {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      padding-top: 10px;
+    }
+    
+    .bezier-canvas {
+      width: 280px;
+      height: 280px;
+      background: #1a1a1a;
+      border-radius: 4px;
+      display: block;
+      cursor: crosshair;
+      border: 1px solid #333;
+    }
+    
+    .bezier-values {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    
+    .bezier-values input {
+      padding: 6px 8px;
+      border: 1px solid #444;
+      border-radius: 3px;
+      background: #2a2a2a;
+      color: #e0e0e0;
+      text-align: left;
+      font-size: 0.85rem;
+      width: 76px;
+    }
+    
+    .bezier-presets {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+    
+    .preset-btn {
+      background: #2a2a2a !important;
+      font-size: 0.8rem;
+      padding: 6px 10px !important;
+    }
+    
+    .preset-btn:hover {
+      background: #333 !important;
+    }
+    
+    .bezier-output {
+      text-align: center; 
+      margin-top: 15px; 
+      font-size: 0.8rem; 
+      color: #999;
+      font-family: monospace;
+      background: #1a1a1a;
+      padding: 6px 10px;
+      border-radius: 3px;
+      border: 1px solid #333;
+    }
+    
+    .export-section {
+      background: #222;
+      border: 1px solid #333;
+      border-radius: 6px;
+      padding: 20px;
+      margin-top: 20px;
+    }
+    
+    .code-output {
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 4px;
+      padding: 12px;
+      font-family: 'SF Mono', Monaco, monospace;
+      font-size: 0.85rem;
+      color: #4CAF50;
+      white-space: pre-wrap;
+      margin-bottom: 15px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    
+    .export-buttons {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .copy-btn {
+      background: #2a2a2a ;
+      font-weight: 500;
+    }
+    
+    .copy-btn:hover {
+      background: #333;
+    }
+    .copy-btn:active {
+      background: #2a2a2a ;
+    }
+
+    /* Info text styling */
+    .info-text {
+      font-size: 0.75rem;
+      color: #888;
+      margin: 4px 0 0 0;
+      font-style: italic;
+      line-height: 1.3;
+    }
+    
+    .layers-info {
+      font-size: 0.75rem;
+      color: #888;
+      margin: 4px 0 0 0;
+      font-style: italic;
+      line-height: 1.3;
+    }
+
+    .warning-text {
+      font-size: 0.75rem;
+      color: #ff9100;
+      /* margin: 4px 0 0 0; */
+      font-style: italic;
+      line-height: 1.3;
+      background: #ff910030;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ff9100;
+      margin-top: 30px;
+    }
+
+    /* New styles for form elements */
+    select {
+      padding: 6px 10px;
+      background: #2a2a2a;
+      color: #e0e0e0;
+      border: 1px solid #444;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      width: 150px;
+      margin: 4px 0 0 0;
+    }
+
+    select:hover {
+      border-color: #666;
+    }
+
+    select:focus {
+      outline: none;
+      border-color: #0066cc;
+    }
+
+    input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      margin-left: 8px;
+      accent-color: #0066cc;
+    }
+
+    input[type="color"] {
+      width: 50px;
+      height: 32px;
+      padding: 0;
+      border: 1px solid #444;
+      border-radius: 4px;
+      background: none;
+      cursor: pointer;
+      margin-left: 8px;
+    }
+
+    input[type="color"]:hover {
+      border-color: #666;
+    }
+
+    /* Gradient color stop styling */
+    .tint-gradient-color-stop {
+      display: flex !important;
+      align-items: center;
+      gap: 8px !important;
+      margin-bottom: 8px !important;
+      padding: 8px;
+      background: #1a1a1a;
+      border-radius: 4px;
+      border: 1px solid #333;
+    }
+
+    .tint-gradient-color-stop input[type="number"] {
+      width: 60px !important;
+      padding: 4px 6px;
+      border: 1px solid #444;
+      border-radius: 3px;
+      background: #2a2a2a;
+      color: #e0e0e0;
+      text-align: center;
+      font-size: 0.85rem;
+    }
+
+    .tint-gradient-color-stop button {
+      padding: 4px 8px !important;
+      min-width: 28px;
+      flex: 0 0 auto !important;
+      font-size: 0.9rem;
+      background: #dc3545 !important;
+      border-color: #dc3545 !important;
+    }
+
+    .tint-gradient-color-stop button:hover {
+      background: #c82333 !important;
+      border-color: #c82333 !important;
+    }
+
+    .tint-gradient-color-stop input[type="color"] {
+      margin-left: 0 !important;
+      width: 40px;
+      height: 28px;
+    }
+
+    .gradient-stop-separator {
+        display: inline-block;
+        width: 1px;
+        height: 30px;
+        background-color: #444;
+        margin: 0 5px;
+        vertical-align: middle;
+    }
+
+    /* Add button styling */
+    button[onclick*="addGradientColorStop"] {
+      background: #28a745 !important;
+      border-color: #28a745 !important;
+      margin-top: 8px;
+      padding: 8px 12px !important;
+    }
+
+    button[onclick*="addGradientColorStop"]:hover {
+      background: #218838 !important;
+      border-color: #218838 !important;
+    }
+
+    /* Improve control group spacing */
+    .control-group label {
+      display: flex;
+      align-items: center;
+      margin-bottom: 6px;
+      font-weight: 400;
+      font-size: 0.9rem;
+      color: #ccc;
+    }
+
+    .control-group label input[type="checkbox"],
+    .control-group label input[type="color"] {
+      margin-left: auto;
+    }
+
+    /* Grid improvements */
+    .dual-panel .sub-panel:last-child {
+      border-left: 1px solid #333;
+      padding-left: 20px;
+    }
+
+    /* Better spacing for nested controls */
+    #tintGradientControls {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid #333;
+    }
+
+    #tintGradientControls .control-group {
+      margin: 10px 0;
+    }
+
+    #tintGradientColors {
+      margin-top: 8px;
+    }
+
+    #tintGradientColors > label {
+      display: block !important;
+      margin-bottom: 8px;
+      font-size: 0.85rem;
+      color: #aaa;
+    }
+    
+    /* Modern Toggle Switch Styles */
+    .toggle-switch {
+      position: relative;
+      display: inline-block;
+      width: 40px;
+      height: 24px;
+      margin-left: auto;
+    }
+
+    .toggle-switch input[type="checkbox"] {
+      opacity: 0;
+      width: 0;
+      height: 0;
+      position: absolute;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #333;
+      border: 1px solid #555;
+      transition: all 0.3s ease;
+      border-radius: 24px;
+      display: flex;
+      align-items: center;
+      padding: 2px;
+    }
+
+    .toggle-slider:before {
+      content: "";
+      height: 18px;
+      width: 18px;
+      background-color: #666;
+      transition: all 0.3s ease;
+      border-radius: 50%;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      flex-shrink: 0;
+      transform: translateX(0);
+    }
+
+    .toggle-switch input:checked + .toggle-slider {
+      background-color: #0066cc;
+      border-color: #0066cc;
+    }
+
+    .toggle-switch input:checked + .toggle-slider:before {
+      background-color: #ffffff;
+      box-shadow: 0 2px 8px rgba(0,102,204,0.3);
+      transform: translateX(16px);
+    }
+
+    /* Expand animation when pressed */
+    .toggle-switch input:active + .toggle-slider:before {
+      width: 22px;
+      border-radius: 12px;
+      transition: all 0.1s ease;
+    }
+
+    .toggle-switch input:checked:active + .toggle-slider:before {
+      width: 22px;
+      border-radius: 12px;
+      transform: translateX(12px);
+      transition: all 0.1s ease;
+    }
+
+    .toggle-switch:hover .toggle-slider {
+      background-color: #444;
+    }
+
+    .toggle-switch input:checked:hover + .toggle-slider {
+      background-color: #0052a3;
+    }
+
+    /* Improve control group labels for toggles */
+    .control-group label.toggle-label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+      font-weight: 400;
+      font-size: 0.9rem;
+      color: #ccc;
+      cursor: pointer;
+    }
+
+    .control-group label.toggle-label:hover {
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1><i class="fas fa-magic"></i> Progressive Blur Editor</h1>
+    <!-- <p>Create beautiful iOS-style progressive blur effects with real-time preview</p> -->
+  </div>
+  
+  <div class="editor-container">
+    <!-- Left: Preview -->
+    <div class="preview-section">
+      <div class="container" id="previewContainer">
+        <div class="blur-overlay" id="blurBox"></div>
+      </div>
+      
+      <div class="image-selector">
+        <div class="image-thumb active" data-image="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=700&q=80" style="background-image: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=100&q=80')"></div>
+        <div class="image-thumb" data-image="https://images.unsplash.com/photo-1519904981063-b0cf448d479e?auto=format&fit=crop&w=700&q=80" style="background-image: url('https://images.unsplash.com/photo-1519904981063-b0cf448d479e?auto=format&fit=crop&w=100&q=80')"></div>
+        <div class="image-thumb" data-image="https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=700&q=80" style="background-image: url('https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=100&q=80')"></div>
+        <div class="image-thumb" data-image="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=700&q=80" style="background-image: url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=100&q=80')"></div>
+        <div class="image-thumb" data-image="https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&w=700&q=80" style="background-image: url('https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&w=100&q=80')"></div>
+        
+        <div class="upload-section">
+          <div class="upload-btn">
+            <i class="fas fa-upload"></i> Upload Image
+            <input type="file" id="imageUpload" accept="image/*">
+          </div>
+        </div>
+      </div>
+      
+      <!-- Export Code -->
+      <div class="export-section">
+        <!-- <h3 class="panel-title">📋 Export Code</h3> -->
+        <div class="code-output" id="codeOutput">// Your generated code will appear here</div>
+        <div class="export-buttons">
+          <button onclick="updateCode()"><i class="fas fa-sync-alt"></i> Refresh Code</button>
+          <button class="copy-btn" onclick="copyCode()"><i class="fas fa-copy"></i> Copy Code</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Right: Controls -->
+    <div class="controls-section">
+      <!-- Blur Settings -->
+      <div class="control-panel" >
+        <h3 class="panel-title">Main Settings</h3>
+        
+        <div class="control-group">
+          <label class="toggle-label" for="blurEnabled">
+            Blur Enabled:
+            <div class="toggle-switch">
+              <input type="checkbox" id="blurEnabled" checked>
+              <span class="toggle-slider"></span>
+            </div>
+          </label>
+        </div>
+        
+        <div class="control-group">
+          <label><i class="fas fa-adjust"></i> Blur Amount: <span id="blurValue">200</span>px</label>
+          <div class="slider-container">
+            <input type="range" id="blurSlider" min="0" max="1000" value="200">
+            <div class="value-display" id="blurDisplay">200</div>
+          </div>
+          <p class="info-text">Recommended: 100-500px</p>
+        </div>
+        
+        <div class="control-group">
+          <label><i class="fas fa-layer-group"></i> Layers: <span id="layersValue">5</span></label>
+          <div class="slider-container">
+            <input type="range" id="layersSlider" min="3" max="20" value="5">
+            <div class="value-display" id="layersDisplay">5</div>
+          </div>
+          <p class="info-text">More layers = smoother blur transition = bad performance (3-8 recommended)</p>
+        </div>
+        
+        <div class="control-group">
+          <label><i class="fas fa-arrows-alt-v"></i> Height: <span id="heightValue">50</span>%</label>
+          <div class="slider-container">
+            <input type="range" id="heightSlider" min="10" max="100" value="50">
+            <div class="value-display" id="heightDisplay">50</div>
+          </div>
+          <p class="info-text">Size of the blur area relative to container</p>
+        </div>
+
+        <!-- Preset Buttons -->
+        <div class="control-group">
+          <label><i class="fas fa-magic"></i> Presets:</label>
+          <div class="button-grid">
+            <button class="preset-btn" onclick="loadBlurPreset('ios')">IOS Style</button>
+            <button class="preset-btn" onclick="loadBlurPreset('windows-acrylic')">Windows Acrylic</button>
+            <button class="preset-btn" onclick="loadBlurPreset('glass-morphism')">Glass Morphism</button>
+            <button class="preset-btn" onclick="loadBlurPreset('subtle')">Subtle</button>
+          </div>
+          <p class="info-text">Quick presets for common blur configurations</p>
+        </div>
+      </div>
+      
+      <!-- Opacity & Direction Settings -->
+      <div class="control-panel">
+        <!-- <h3 class="panel-title">Opacity & Direction</h3> -->
+        
+        <div class="dual-panel">
+          <!-- Left: Opacity -->
+          <div class="sub-panel">
+            <h3 class="panel-title">Opacity</h3>
+            <div class="control-group">
+              <label>Start Opacity: <span id="startOpacityValue">0.0</span></label>
+              <div class="slider-container">
+                <input type="range" id="startOpacitySlider" min="0" max="1" step="0.1" value="0">
+                <div class="value-display" id="startOpacityDisplay">0.0</div>
+              </div>
+              <p class="info-text">Blur opacity at the fade start</p>
+            </div>
+            
+            <div class="control-group">
+              <label>End Opacity: <span id="endOpacityValue">1.0</span></label>
+              <div class="slider-container">
+                <input type="range" id="endOpacitySlider" min="0" max="1" step="0.1" value="1">
+                <div class="value-display" id="endOpacityDisplay">1.0</div>
+              </div>
+              <p class="info-text">Blur opacity at the fade end</p>
+            </div>
+            <p class="warning-text"><i class="fas fa-circle-exclamation"></i> We don't recommend changing the opacity values.</p>
+          </div>
+          
+          <!-- Right: Direction & Position -->
+          <div class="sub-panel" style="border-left: 1px solid #333; padding-left: 20px;">
+            <h3 class="panel-title">Direction & Position</h3>
+            <div class="control-group">
+              <label><i class="fas fa-arrows-alt"></i> Direction:</label>
+              <div class="button-grid">
+                <button class="dir-btn" data-dir="top"><i class="fas fa-arrow-up"></i>Top</button>
+                <button class="dir-btn active" data-dir="bottom"><i class="fas fa-arrow-down"></i> Bottom</button>
+                <button class="dir-btn" data-dir="left"><i class="fas fa-arrow-left"></i> Left</button>
+                <button class="dir-btn" data-dir="right"><i class="fas fa-arrow-right"></i> Right</button>
+              </div>
+              <p class="info-text">Which direction the blur fades towards</p>
+            </div>
+            
+            <div class="control-group">
+              <label><i class="fas fa-map-marker-alt"></i> Position:</label>
+              <div class="button-row">
+                <button class="pos-btn" data-pos="top">Top</button>
+                <button class="pos-btn active" data-pos="bottom">Bottom</button>
+              </div>
+              <p class="info-text">Where to place the blur area (top/bottom edge)</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+        <!-- Bezier Curve Editor -->
+        <div class="bezier-editor">
+            <h3 class="panel-title">Feather Curve</h3>
+            <p class="info-text" style="margin-bottom: 15px;">Control how blur intensity changes across the gradient. Drag control points or use presets.</p>
+            
+            <div class="bezier-layout">
+            <!-- Left: Canvas -->
+            <div class="bezier-canvas-section">
+                <canvas class="bezier-canvas" id="bezierCanvas" width="280" height="280"></canvas>
+            </div>
+            
+            <!-- Right: Controls -->
+            <div class="bezier-controls-section">
+                <div class="bezier-values">
+                <input type="number" id="x1Input" step="0.01" min="0" max="1" value="0.25" placeholder="x1">
+                <input type="number" id="y1Input" step="0.01" value="0.46" placeholder="y1">
+                <input type="number" id="x2Input" step="0.01" min="0" max="1" value="0.45" placeholder="x2">
+                <input type="number" id="y2Input" step="0.01" value="0.94" placeholder="y2">
+                </div>
+                <div class="bezier-presets" style="padding-top: 15px; border-top: 1px solid #333;">
+                    <button class="preset-btn" onclick="loadPreset([0.25, 0.46, 0.45, 0.94])">IOS</button>
+                    <button class="preset-btn" onclick="loadPreset([0.68, -0.55, 0.265, 1.55])">Bounce</button>
+                    <button class="preset-btn" onclick="loadPreset([0.16, 1, 0.3, 1])">Extreme</button>
+                    <button class="preset-btn" onclick="loadPreset([0.7, 0, 0.84, 0])">Sharp</button>
+                </div>
+            </div>
+            </div>
+            
+            <!-- Bottom: Output -->
+            <div class="bezier-output">
+            <span id="bezierOutput">cubic-bezier(0.25, 0.46, 0.45, 0.94)</span>
+            </div>
+        </div>
+
+      <!-- Luminosity & Tint Settings -->
+      <div class="control-panel">
+        <h3 class="panel-title"><i class="fas fa-lightbulb"></i> Luminosity Layer</h3>
+        <div class="control-group">
+          <label class="toggle-label" for="luminosityEnabled">
+            Enabled:
+            <div class="toggle-switch">
+              <input type="checkbox" id="luminosityEnabled" checked>
+              <span class="toggle-slider"></span>
+            </div>
+          </label>
+        </div>
+        <div class="control-group">
+          <label>Brightness: <span id="brightnessValue">1.1</span></label>
+          <div class="slider-container">
+            <input type="range" id="brightnessSlider" min="0" max="2" step="0.1" value="1.1">
+            <div class="value-display" id="brightnessDisplay">1.1</div>
+          </div>
+        </div>
+        <div class="control-group">
+          <label>Contrast: <span id="contrastValue">1.05</span></label>
+          <div class="slider-container">
+            <input type="range" id="contrastSlider" min="0" max="2" step="0.05" value="1.05">
+            <div class="value-display" id="contrastDisplay">1.05</div>
+          </div>
+        </div>
+        <div class="control-group">
+          <label>Saturate: <span id="saturateValue">1.2</span></label>
+          <div class="slider-container">
+            <input type="range" id="saturateSlider" min="0" max="3" step="0.1" value="1.2">
+            <div class="value-display" id="saturateDisplay">1.2</div>
+          </div>
+        </div>
+        <div class="control-group">
+          <label>Opacity: <span id="luminosityOpacityValue">0.8</span></label>
+          <div class="slider-container">
+            <input type="range" id="luminosityOpacitySlider" min="0" max="1" step="0.1" value="0.8">
+            <div class="value-display" id="luminosityOpacityDisplay">0.8</div>
+          </div>
+        </div>
+        <div class="control-group">
+          <label class="dropdown-label">Blend Mode: 
+            <select id="luminosityBlendMode">
+              <option value="normal">Normal</option>
+              <option value="overlay">Overlay</option>
+              <option value="screen">Screen</option>
+              <option value="multiply">Multiply</option>
+              <option value="lighten">Lighten</option>
+              <option value="color-dodge">Color Dodge</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <div class="control-panel">
+        <h3 class="panel-title"><i class="fas fa-palette"></i> Tint Layer</h3>
+        <div class="control-group">
+          <label class="toggle-label" for="tintEnabled">
+            Enabled:
+            <div class="toggle-switch">
+              <input type="checkbox" id="tintEnabled" checked>
+              <span class="toggle-slider"></span>
+            </div>
+          </label>
+        </div>
+        <div class="control-group">
+          <label>Color: <input type="color" id="tintColor" value="#ffffff"></label>
+        </div>
+        <div class="control-group">
+          <label>Opacity: <span id="tintOpacityValue">0.1</span></label>
+          <div class="slider-container">
+            <input type="range" id="tintOpacitySlider" min="0" max="1" step="0.05" value="0.1">
+            <div class="value-display" id="tintOpacityDisplay">0.1</div>
+          </div>
+        </div>
+        <div class="control-group">
+          <label class="dropdown-label">Blend Mode: 
+            <select id="tintBlendMode">
+              <option value="normal">Normal</option>
+              <option value="overlay" selected>Overlay</option>
+              <option value="screen">Screen</option>
+              <option value="multiply">Multiply</option>
+              <option value="color">Color</option>
+              <option value="hue">Hue</option>
+            </select>
+          </label>
+        </div>
+        <div class="control-group">
+          <label class="toggle-label" for="tintGradientEnabled">
+            Gradient:
+            <div class="toggle-switch">
+              <input type="checkbox" id="tintGradientEnabled">
+              <span class="toggle-slider"></span>
+            </div>
+          </label>
+        </div>
+        <div id="tintGradientControls" style="display:none;">
+          <div class="control-group">
+            <label class="dropdown-label">Direction:
+              <select id="tintGradientDirection">
+                <option value="to bottom">To Bottom</option>
+                <option value="to top">To Top</option>
+                <option value="to right">To Right</option>
+                <option value="to left">To Left</option>
+                <option value="to bottom right">To Bottom Right</option>
+                <option value="to top left">To Top Left</option>
+              </select>
+            </label>
+          </div>
+          <div class="control-group" id="tintGradientColors">
+            <label>Colors (up to 5):</label>
+            <!-- Color stops will be added here by JS -->
+          </div>
+          <button onclick="addGradientColorStop()" type="button"><i class="fas fa-plus"></i> Add Color Stop</button>
+        </div>
+      </div>
+
+      <div class="control-panel">
+        <h3 class="panel-title"><i class="fas fa-tv"></i> Noise Layer</h3>
+        <div class="control-group">
+          <label class="toggle-label" for="noiseEnabled">
+            Enabled:
+            <div class="toggle-switch">
+              <input type="checkbox" id="noiseEnabled">
+              <span class="toggle-slider"></span>
+            </div>
+          </label>
+        </div>
+        <div class="control-group">
+          <label>Opacity: <span id="noiseOpacityValue">0.3</span></label>
+          <div class="slider-container">
+            <input type="range" id="noiseOpacitySlider" min="0" max="1" step="0.05" value="0.3">
+            <div class="value-display" id="noiseOpacityDisplay">0.3</div>
+          </div>
+        </div>
+        <div class="control-group">
+          <label class="dropdown-label">Blend Mode: 
+            <select id="noiseBlendMode">
+              <option value="normal">Normal</option>
+              <option value="multiply" selected>Multiply</option>
+              <option value="overlay">Overlay</option>
+              <option value="screen">Screen</option>
+              <option value="darken">Darken</option>
+              <option value="lighten">Lighten</option>
+            </select>
+          </label>
+        </div>
+        <p class="info-text">Adds texture and grain to the blur effect for more realistic appearance</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="./progressive-acrylic.js"></script>
+  <script>
+    let currentSettings = {
+      blur: {
+        enabled: true,
+        maxBlur: 200,
+        layers: 5,
+        height: '50%',
+        startOpacity: 0,
+        endOpacity: 1,
+        direction: 'bottom',
+        position: 'bottom',
+        curve: [0.25, 0.46, 0.45, 0.94]
+      },
+      luminosity: {
+        enabled: true,
+        brightness: 1.1,
+        contrast: 1.05,
+        saturate: 1.2,
+        opacity: 0.8,
+        blendMode: 'normal'
+      },
+      tint: {
+        enabled: true,
+        color: '#ffffff',
+        gradient: null, 
+        opacity: 0.1,
+        blendMode: 'overlay'
+      },
+      noise: {
+        enabled: false,
+        opacity: 0.3,
+        blendMode: 'multiply'
+      }
+    };
+
+    // Cubic Bezier Editor
+    const canvas = document.getElementById('bezierCanvas');
+    const ctx = canvas.getContext('2d');
+    let isDragging = false;
+    let dragPoint = null;
+    let bezierPoints = {
+      p1: { x: 70, y: 151 },   // x1=0.25, y1=0.46 (280*0.25, 280*(1-0.46))
+      p2: { x: 126, y: 17 }    // x2=0.45, y2=0.94 (280*0.45, 280*(1-0.94))
+    };
+
+    function drawBezierEditor() {
+      ctx.clearRect(0, 0, 280, 280);
+      
+      // Grid
+      ctx.strokeStyle = '#333';
+      ctx.lineWidth = 1;
+      for (let i = 0; i <= 280; i += 35) {
+        ctx.beginPath();
+        ctx.moveTo(i, 0);
+        ctx.lineTo(i, 280);
+        ctx.moveTo(0, i);
+        ctx.lineTo(280, i);
+        ctx.stroke();
+      }
+      
+      // Main diagonal
+      ctx.strokeStyle = '#555';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(0, 280);
+      ctx.lineTo(280, 0);
+      ctx.stroke();
+      
+      // Control lines
+      ctx.strokeStyle = '#666';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath();
+      ctx.moveTo(0, 280);
+      ctx.lineTo(bezierPoints.p1.x, bezierPoints.p1.y);
+      ctx.moveTo(280, 0);
+      ctx.lineTo(bezierPoints.p2.x, bezierPoints.p2.y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      
+      // Bezier curve
+      ctx.strokeStyle = '#0066cc';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(0, 280);
+      ctx.bezierCurveTo(
+        bezierPoints.p1.x, bezierPoints.p1.y,
+        bezierPoints.p2.x, bezierPoints.p2.y,
+        280, 0
+      );
+      ctx.stroke();
+      
+      // Control points
+      ctx.fillStyle = '#0066cc';
+      ctx.beginPath();
+      ctx.arc(bezierPoints.p1.x, bezierPoints.p1.y, 6, 0, 2 * Math.PI);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(bezierPoints.p2.x, bezierPoints.p2.y, 6, 0, 2 * Math.PI);
+      ctx.fill();
+      
+      // Update values
+      updateBezierValues();
+      updateBlur();
+    }
+
+    function updateBezierValues() {
+      const x1 = (bezierPoints.p1.x / 280).toFixed(3);
+      const y1 = (1 - bezierPoints.p1.y / 280).toFixed(3);
+      const x2 = (bezierPoints.p2.x / 280).toFixed(3);
+      const y2 = (1 - bezierPoints.p2.y / 280).toFixed(3);
+      
+      document.getElementById('x1Input').value = x1;
+      document.getElementById('y1Input').value = y1;
+      document.getElementById('x2Input').value = x2;
+      document.getElementById('y2Input').value = y2;
+      document.getElementById('bezierOutput').textContent = `cubic-bezier(${x1}, ${y1}, ${x2}, ${y2})`;
+      
+      currentSettings.blur.curve = [parseFloat(x1), parseFloat(y1), parseFloat(x2), parseFloat(y2)];
+    }
+
+    // Canvas events
+    canvas.addEventListener('mousedown', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      
+      const dist1 = Math.sqrt((x - bezierPoints.p1.x) ** 2 + (y - bezierPoints.p1.y) ** 2);
+      const dist2 = Math.sqrt((x - bezierPoints.p2.x) ** 2 + (y - bezierPoints.p2.y) ** 2);
+      
+      if (dist1 < 20) {
+        isDragging = true;
+        dragPoint = 'p1';
+      } else if (dist2 < 20) {
+        isDragging = true;
+        dragPoint = 'p2';
+      }
+    });
+
+    canvas.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      
+      const rect = canvas.getBoundingClientRect();
+      const x = Math.max(0, Math.min(280, e.clientX - rect.left));
+      const y = Math.max(0, Math.min(280, e.clientY - rect.top));
+      
+      bezierPoints[dragPoint] = { x, y };
+      drawBezierEditor();
+    });
+
+    canvas.addEventListener('mouseup', () => {
+      isDragging = false;
+      dragPoint = null;
+    });
+
+    // Input listeners
+    ['x1Input', 'y1Input', 'x2Input', 'y2Input'].forEach(id => {
+      document.getElementById(id).addEventListener('input', () => {
+        const x1 = parseFloat(document.getElementById('x1Input').value);
+        const y1 = parseFloat(document.getElementById('y1Input').value);
+        const x2 = parseFloat(document.getElementById('x2Input').value);
+        const y2 = parseFloat(document.getElementById('y2Input').value);
+        
+        bezierPoints.p1.x = x1 * 280;
+        bezierPoints.p1.y = (1 - y1) * 280;
+        bezierPoints.p2.x = x2 * 280;
+        bezierPoints.p2.y = (1 - y2) * 280;
+        
+        drawBezierEditor();
+      });
+    });
+
+    function loadPreset(values) {
+      const [x1, y1, x2, y2] = values;
+      bezierPoints.p1.x = x1 * 280;
+      bezierPoints.p1.y = (1 - y1) * 280;
+      bezierPoints.p2.x = x2 * 280;
+      bezierPoints.p2.y = (1 - y2) * 280;
+      drawBezierEditor();
+    }
+
+    function updateBlur() {
+      progressiveAcrylic(document.getElementById('blurBox'), currentSettings);
+      updateCode();
+    }
+
+    function updateCode() {
+      let code = 'progressiveAcrylic(targetElement, {\n';
+      code += '  blur: {\n';
+      code += `    enabled: ${currentSettings.blur.enabled},\n`;
+      code += `    direction: '${currentSettings.blur.direction}',\n`;
+      code += `    height: '${currentSettings.blur.height}',\n`;
+      code += `    layers: ${currentSettings.blur.layers},\n`;
+      code += `    maxBlur: ${currentSettings.blur.maxBlur},\n`; // Note: API uses maxBlur, editor uses blur for slider id
+      code += `    startOpacity: ${currentSettings.blur.startOpacity},\n`;
+      code += `    endOpacity: ${currentSettings.blur.endOpacity},\n`;
+      code += `    position: '${currentSettings.blur.position}',\n`;
+      code += `    curve: [${currentSettings.blur.curve.join(', ')}]\n`;
+      code += '  },\n';
+
+      code += '  luminosity: {\n';
+      code += `    enabled: ${currentSettings.luminosity.enabled},\n`;
+      code += `    brightness: ${currentSettings.luminosity.brightness},\n`;
+      code += `    contrast: ${currentSettings.luminosity.contrast},\n`;
+      code += `    saturate: ${currentSettings.luminosity.saturate},\n`;
+      code += `    opacity: ${currentSettings.luminosity.opacity},\n`;
+      code += `    blendMode: '${currentSettings.luminosity.blendMode}'\n`;
+      code += '  },\n';
+
+      code += '  tint: {\n';
+      code += `    enabled: ${currentSettings.tint.enabled},\n`;
+      if (currentSettings.tint.gradient) {
+        code += '    gradient: {\n';
+        code += `      direction: '${currentSettings.tint.gradient.direction}',\n`;
+        code += '      colors: [\n';
+        currentSettings.tint.gradient.colors.forEach(c => {
+          if (typeof c === 'string') {
+            code += `        '${c}',\n`;
+          } else {
+            code += `        { color: '${c.color}', stop: ${c.stop}, opacity: ${c.opacity}`;
+            code += ' },\n';
+          }
+        });
+        code += '      ]\n';
+        code += '    },\n';
+      } else {
+        code += `    color: '${currentSettings.tint.color}',\n`;
+      }
+      code += `    opacity: ${currentSettings.tint.opacity},\n`;
+      code += `    blendMode: '${currentSettings.tint.blendMode}'\n`;
+      code += '  },\n';
+
+      code += '  noise: {\n';
+      code += `    enabled: ${currentSettings.noise.enabled},\n`;
+      code += `    opacity: ${currentSettings.noise.opacity},\n`;
+      code += `    blendMode: '${currentSettings.noise.blendMode}'\n`;
+      code += '  }\n';
+      code += '});';
+      
+      document.getElementById('codeOutput').textContent = code;
+    }
+
+    function copyCode() {
+      const code = document.getElementById('codeOutput').textContent;
+      navigator.clipboard.writeText(code).then(() => {
+        const btn = document.querySelector('.copy-btn');
+        const originalHTML = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+        btn.style.backgroundColor = '#4CAF5030';
+        btn.style.color = '#4CAF50';
+        btn.style.borderColor = '#4CAF50';
+        btn.style.borderStyle = 'dashed';
+        setTimeout(() => {
+          btn.innerHTML = originalHTML;
+          btn.style.backgroundColor = '';
+          btn.style.color = '';
+          btn.style.borderColor = '';
+          btn.style.borderStyle = 'solid';
+        }, 500);
+      });
+    }
+
+    // Slider controls
+    ['blur', 'layers', 'height', 'startOpacity', 'endOpacity'].forEach(param => {
+      const slider = document.getElementById(param + 'Slider');
+      slider.addEventListener('input', function(e) {
+        const value = param.includes('Opacity') ? 
+                     parseFloat(e.target.value) : parseInt(e.target.value);
+        
+        // Handle special parameter names
+        if (param === 'blur') {
+          currentSettings.blur.maxBlur = value;
+        } else if (param === 'height') {
+          currentSettings.blur.height = value + '%';
+        } else {
+          currentSettings.blur[param] = value;
+        }
+        
+        const display = param.includes('Opacity') ? value.toFixed(1) : value;
+        document.getElementById(param + 'Display').textContent = display;
+        document.getElementById(param + 'Value').textContent = display;
+        updateBlur();
+      });
+    });
+
+    // Button controls
+    document.querySelectorAll('.dir-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.dir-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        currentSettings.blur.direction = this.getAttribute('data-dir');
+        updateBlur();
+      });
+    });
+
+    document.querySelectorAll('.pos-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.pos-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        currentSettings.blur.position = this.getAttribute('data-pos');
+        updateBlur();
+      });
+    });
+
+    // Image selector
+    document.querySelectorAll('.image-thumb').forEach(thumb => {
+      thumb.addEventListener('click', function() {
+        document.querySelectorAll('.image-thumb').forEach(t => t.classList.remove('active'));
+        this.classList.add('active');
+        document.getElementById('previewContainer').style.backgroundImage = `url('${this.getAttribute('data-image')}')`;
+      });
+    });
+
+    // Image upload
+    document.getElementById('imageUpload').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const imageUrl = e.target.result;
+          
+          // Clear all active states
+          document.querySelectorAll('.image-thumb').forEach(t => t.classList.remove('active'));
+          
+          // Set new background
+          document.getElementById('previewContainer').style.backgroundImage = `url('${imageUrl}')`;
+          
+          // Optional: Add uploaded image as a new thumbnail
+          const newThumb = document.createElement('div');
+          newThumb.className = 'image-thumb active';
+          newThumb.style.backgroundImage = `url('${imageUrl}')`;
+          newThumb.setAttribute('data-image', imageUrl);
+          
+          // Add click event to new thumb
+          newThumb.addEventListener('click', function() {
+            document.querySelectorAll('.image-thumb').forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            document.getElementById('previewContainer').style.backgroundImage = `url('${imageUrl}')`;
+          });
+          
+          // Insert before upload section
+          const uploadSection = document.querySelector('.upload-section');
+          uploadSection.parentNode.insertBefore(newThumb, uploadSection);
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // --- LUMINOSITY LAYER CONTROLS ---
+    document.getElementById('luminosityEnabled').addEventListener('change', function(e) {
+      currentSettings.luminosity.enabled = e.target.checked;
+      updateBlur();
+    });
+
+    // --- BLUR LAYER CONTROLS ---
+    document.getElementById('blurEnabled').addEventListener('change', function(e) {
+      currentSettings.blur.enabled = e.target.checked;
+      updateBlur();
+    });
+
+    ['brightness', 'contrast', 'saturate'].forEach(param => {
+      const slider = document.getElementById(param + 'Slider');
+      slider.addEventListener('input', function(e) {
+        const value = parseFloat(e.target.value);
+        currentSettings.luminosity[param] = value;
+        document.getElementById(param + 'Display').textContent = value.toFixed(param === 'contrast' ? 2 : 1);
+        document.getElementById(param + 'Value').textContent = value.toFixed(param === 'contrast' ? 2 : 1);
+        updateBlur();
+      });
+    });
+    
+    document.getElementById('luminosityOpacitySlider').addEventListener('input', function(e) {
+        const value = parseFloat(e.target.value);
+        currentSettings.luminosity.opacity = value;
+        document.getElementById('luminosityOpacityDisplay').textContent = value.toFixed(1);
+        document.getElementById('luminosityOpacityValue').textContent = value.toFixed(1);
+        updateBlur();
+    });
+
+    document.getElementById('luminosityBlendMode').addEventListener('change', function(e) {
+      currentSettings.luminosity.blendMode = e.target.value;
+      updateBlur();
+    });
+
+    // --- TINT LAYER CONTROLS ---
+    document.getElementById('tintEnabled').addEventListener('change', function(e) {
+      currentSettings.tint.enabled = e.target.checked;
+      updateBlur();
+    });
+
+    document.getElementById('tintColor').addEventListener('input', function(e) {
+      currentSettings.tint.color = e.target.value;
+      if (!currentSettings.tint.gradient) { // Only update if not in gradient mode
+        updateBlur();
+      }
+    });
+
+    document.getElementById('tintOpacitySlider').addEventListener('input', function(e) {
+      const value = parseFloat(e.target.value);
+      currentSettings.tint.opacity = value;
+      document.getElementById('tintOpacityDisplay').textContent = value.toFixed(2);
+      document.getElementById('tintOpacityValue').textContent = value.toFixed(2);
+      updateBlur();
+    });
+
+    document.getElementById('tintBlendMode').addEventListener('change', function(e) {
+      currentSettings.tint.blendMode = e.target.value;
+      updateBlur();
+    });
+
+    document.getElementById('tintGradientEnabled').addEventListener('change', function(e) {
+      const gradientControls = document.getElementById('tintGradientControls');
+      if (e.target.checked) {
+        gradientControls.style.display = 'block';
+        currentSettings.tint.gradient = {
+          direction: document.getElementById('tintGradientDirection').value,
+          colors: getGradientColors()
+        };
+        if (currentSettings.tint.gradient.colors.length === 0) {
+            addGradientColorStop('#ffffff', 0, 1.0);
+            addGradientColorStop('#000000', 100, 1.0);
+        }
+      } else {
+        gradientControls.style.display = 'none';
+        currentSettings.tint.gradient = null;
+      }
+      updateBlur();
+    });
+
+    document.getElementById('tintGradientDirection').addEventListener('change', function(e) {
+      if (currentSettings.tint.gradient) {
+        currentSettings.tint.gradient.direction = e.target.value;
+        updateBlur();
+      }
+    });
+
+    function getGradientColors() {
+      const colorStops = [];
+      const colorElements = document.querySelectorAll('.tint-gradient-color-stop');
+      colorElements.forEach(el => {
+        const colorInput = el.querySelector('input[type="color"]');
+        const numberInputs = el.querySelectorAll('input[type="number"]');
+        const stopInput = numberInputs[0]; // First number input is stop
+        const opacityInput = numberInputs[1]; // Second number input is opacity
+        colorStops.push({ 
+          color: colorInput.value, 
+          stop: parseInt(stopInput.value), 
+          opacity: parseFloat(opacityInput.value) 
+        });
+      });
+      return colorStops;
+    }
+    
+    let colorStopCount = 0;
+    function addGradientColorStop(defaultColor = '#cccccc', defaultStop = 50, defaultOpacity = 1.0) {
+        if (colorStopCount >= 5) return; // Max 5 color stops
+        colorStopCount++;
+
+        const container = document.getElementById('tintGradientColors');
+        const stopDiv = document.createElement('div');
+        stopDiv.className = 'tint-gradient-color-stop';
+        stopDiv.style.display = 'flex';
+        stopDiv.style.gap = '8px';
+        stopDiv.style.marginBottom = '8px';
+
+        const colorInput = document.createElement('input');
+        colorInput.type = 'color';
+        colorInput.value = defaultColor;
+        colorInput.style.width = '30px';
+        colorInput.style.height = '30px';
+        colorInput.style.border = 'none';
+        // colorInput.style.borderRadius = '50%';
+        colorInput.style.padding = '0';
+        colorInput.style.margin = '0';
+        colorInput.style.boxShadow = '0 0 2px rgba(0, 0, 0, 0.3)';
+        
+        colorInput.addEventListener('input', () => {
+            if (currentSettings.tint.gradient) {
+                currentSettings.tint.gradient.colors = getGradientColors();
+                updateBlur();
+            }
+        });
+
+        const stopInput = document.createElement('input');
+        stopInput.type = 'number';
+        stopInput.min = 0;
+        stopInput.max = 100;
+        stopInput.value = defaultStop;
+        stopInput.style.width = '50px';
+        stopInput.addEventListener('input', () => {
+            if (currentSettings.tint.gradient) {
+                currentSettings.tint.gradient.colors = getGradientColors();
+                updateBlur();
+            }
+        });
+
+        const opacityInput = document.createElement('input');
+        opacityInput.type = 'number';
+        opacityInput.min = 0;
+        opacityInput.max = 1;
+        opacityInput.step = 0.05;
+        opacityInput.value = defaultOpacity;
+        opacityInput.style.width = '60px';
+        opacityInput.addEventListener('input', () => {
+            if (currentSettings.tint.gradient) {
+                currentSettings.tint.gradient.colors = getGradientColors();
+                updateBlur();
+            }
+        });
+        
+        const removeBtn = document.createElement('button');
+        removeBtn.innerHTML = '<i class="fas fa-trash-alt" style="margin:0;"></i>';
+        removeBtn.type = 'button';
+        removeBtn.style.padding = '2px 6px'; 
+        removeBtn.style.flex = '0';
+        removeBtn.onclick = () => {
+            stopDiv.remove();
+            colorStopCount--;
+            if (currentSettings.tint.gradient) {
+                currentSettings.tint.gradient.colors = getGradientColors();
+                updateBlur();
+            }
+        };
+
+        const createSeparator = () => {
+            const separator = document.createElement('div');
+            separator.className = 'gradient-stop-separator';
+            return separator;
+        };
+
+        stopDiv.appendChild(document.createTextNode(` Stop ${colorStopCount}: `));
+        stopDiv.appendChild(colorInput);
+        stopDiv.appendChild(createSeparator());
+        stopDiv.appendChild(document.createTextNode('% :'));
+        stopDiv.appendChild(stopInput);
+        stopDiv.appendChild(createSeparator());
+        stopDiv.appendChild(document.createTextNode('Opacity :'));
+        stopDiv.appendChild(opacityInput);
+        stopDiv.appendChild(createSeparator());
+        stopDiv.appendChild(removeBtn);
+        container.appendChild(stopDiv);
+
+        if (currentSettings.tint.gradient) {
+            currentSettings.tint.gradient.colors = getGradientColors();
+            updateBlur();
+        }
+    }
+
+    // --- NOISE LAYER CONTROLS ---
+    document.getElementById('noiseEnabled').addEventListener('change', function(e) {
+      currentSettings.noise.enabled = e.target.checked;
+      updateBlur();
+    });
+
+    document.getElementById('noiseOpacitySlider').addEventListener('input', function(e) {
+      const value = parseFloat(e.target.value);
+      currentSettings.noise.opacity = value;
+      document.getElementById('noiseOpacityDisplay').textContent = value.toFixed(2);
+      document.getElementById('noiseOpacityValue').textContent = value.toFixed(2);
+      updateBlur();
+    });
+
+    document.getElementById('noiseBlendMode').addEventListener('change', function(e) {
+      currentSettings.noise.blendMode = e.target.value;
+      updateBlur();
+    });
+
+    // INITIALIZE
+    function initializeControls() {
+        // Blur settings
+        document.getElementById('blurEnabled').checked = currentSettings.blur.enabled;
+        document.getElementById('blurSlider').value = currentSettings.blur.maxBlur;
+        document.getElementById('blurDisplay').textContent = currentSettings.blur.maxBlur;
+        document.getElementById('blurValue').textContent = currentSettings.blur.maxBlur;
+        
+        document.getElementById('layersSlider').value = currentSettings.blur.layers;
+        document.getElementById('layersDisplay').textContent = currentSettings.blur.layers;
+        document.getElementById('layersValue').textContent = currentSettings.blur.layers;
+        
+        const heightValue = parseInt(currentSettings.blur.height.replace('%', ''));
+        document.getElementById('heightSlider').value = heightValue;
+        document.getElementById('heightDisplay').textContent = heightValue;
+        document.getElementById('heightValue').textContent = heightValue;
+        
+        document.getElementById('startOpacitySlider').value = currentSettings.blur.startOpacity;
+        document.getElementById('startOpacityDisplay').textContent = currentSettings.blur.startOpacity.toFixed(1);
+        document.getElementById('startOpacityValue').textContent = currentSettings.blur.startOpacity.toFixed(1);
+        
+        document.getElementById('endOpacitySlider').value = currentSettings.blur.endOpacity;
+        document.getElementById('endOpacityDisplay').textContent = currentSettings.blur.endOpacity.toFixed(1);
+        document.getElementById('endOpacityValue').textContent = currentSettings.blur.endOpacity.toFixed(1);
+
+        // Set active direction and position buttons
+        document.querySelectorAll('.dir-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.getAttribute('data-dir') === currentSettings.blur.direction);
+        });
+        
+        document.querySelectorAll('.pos-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.getAttribute('data-pos') === currentSettings.blur.position);
+        });
+
+        // Luminosity settings
+        document.getElementById('luminosityEnabled').checked = currentSettings.luminosity.enabled;
+        document.getElementById('brightnessSlider').value = currentSettings.luminosity.brightness;
+        document.getElementById('brightnessDisplay').textContent = currentSettings.luminosity.brightness.toFixed(1);
+        document.getElementById('brightnessValue').textContent = currentSettings.luminosity.brightness.toFixed(1);
+        document.getElementById('contrastSlider').value = currentSettings.luminosity.contrast;
+        document.getElementById('contrastDisplay').textContent = currentSettings.luminosity.contrast.toFixed(2);
+        document.getElementById('contrastValue').textContent = currentSettings.luminosity.contrast.toFixed(2);
+        document.getElementById('saturateSlider').value = currentSettings.luminosity.saturate;
+        document.getElementById('saturateDisplay').textContent = currentSettings.luminosity.saturate.toFixed(1);
+        document.getElementById('saturateValue').textContent = currentSettings.luminosity.saturate.toFixed(1);
+        document.getElementById('luminosityOpacitySlider').value = currentSettings.luminosity.opacity;
+        document.getElementById('luminosityOpacityDisplay').textContent = currentSettings.luminosity.opacity.toFixed(1);
+        document.getElementById('luminosityOpacityValue').textContent = currentSettings.luminosity.opacity.toFixed(1);
+        document.getElementById('luminosityBlendMode').value = currentSettings.luminosity.blendMode;
+
+        // Tint settings
+        document.getElementById('tintEnabled').checked = currentSettings.tint.enabled;
+        document.getElementById('tintColor').value = currentSettings.tint.color;
+        document.getElementById('tintOpacitySlider').value = currentSettings.tint.opacity;
+        document.getElementById('tintOpacityDisplay').textContent = currentSettings.tint.opacity.toFixed(2);
+        document.getElementById('tintOpacityValue').textContent = currentSettings.tint.opacity.toFixed(2);
+        document.getElementById('tintBlendMode').value = currentSettings.tint.blendMode;
+        document.getElementById('tintGradientEnabled').checked = !!currentSettings.tint.gradient;
+        
+        const gradientControls = document.getElementById('tintGradientControls');
+        if (currentSettings.tint.gradient) {
+            gradientControls.style.display = 'block';
+            document.getElementById('tintGradientDirection').value = currentSettings.tint.gradient.direction;
+            // Clear existing color stops before adding new ones
+            document.getElementById('tintGradientColors').innerHTML = '<label>Colors (up to 5):</label>'; 
+            colorStopCount = 0;
+            currentSettings.tint.gradient.colors.forEach(c => addGradientColorStop(c.color, c.stop, c.opacity));
+        } else {
+            gradientControls.style.display = 'none';
+        }
+
+        // Noise settings
+        document.getElementById('noiseEnabled').checked = currentSettings.noise.enabled;
+        document.getElementById('noiseOpacitySlider').value = currentSettings.noise.opacity;
+        document.getElementById('noiseOpacityDisplay').textContent = currentSettings.noise.opacity.toFixed(2);
+        document.getElementById('noiseOpacityValue').textContent = currentSettings.noise.opacity.toFixed(2);
+        document.getElementById('noiseBlendMode').value = currentSettings.noise.blendMode;
+    }
+
+    drawBezierEditor(); // Initializes Bezier and calls updateBlur indirectly
+    initializeControls(); // Set initial states of new controls
+    updateBlur(); // Initial effect application
+
+    // Preset configurations
+    function loadBlurPreset(preset) {
+      const presets = {
+        ios: {
+            blur: {
+                enabled: true,
+                direction: 'top',
+                height: '40%',
+                layers: 6,
+                maxBlur: 130,
+                startOpacity: 0,
+                endOpacity: 1,
+                position: 'top',
+                curve: [0.62, 0.123, 0.92, 0.002]
+            },
+            luminosity: {
+                enabled: true,
+                brightness: 1,
+                contrast: 1.2,
+                saturate: 1.3,
+                opacity: 1,
+                blendMode: 'normal'
+            },
+            tint: {
+                enabled: true,
+                color: '#000000',
+                opacity: 0.75,
+                blendMode: 'normal'
+            },
+            noise: {
+                enabled: false,
+                opacity: 0.3,
+                blendMode: 'multiply'
+            }
+        },
+        'windows-acrylic': {
+            blur: {
+                enabled: true,
+                direction: 'bottom',
+                height: '100%',
+                layers: 4,
+                maxBlur: 200,
+                startOpacity: 1,
+                endOpacity: 1,
+                position: 'bottom',
+                curve: 'linear'
+            },
+            luminosity: {
+                enabled: true,
+                brightness: 1.1,
+                contrast: 1,
+                saturate: 1.2,
+                opacity: 1,
+                blendMode: 'normal'
+            },
+            tint: {
+                enabled: false,
+                color: '#ffffff',
+                opacity: 0.15,
+                blendMode: 'normal'
+            },
+            noise: {
+                enabled: true,
+                opacity: 1,
+                blendMode: 'overlay'
+            }  
+        },
+        'glass-morphism': {
+            blur: {
+                enabled: true,
+                direction: 'bottom',
+                height: '33%',
+                layers: 3,
+                maxBlur: 300,
+                startOpacity: 0,
+                endOpacity: 1,
+                position: 'bottom',
+                curve: [0.09, 0.93, 0.7, 0.01]
+            },
+            luminosity: {
+                enabled: false,
+                brightness: 1.2,
+                contrast: 1.1,
+                saturate: 1.3,
+                opacity: 0.7,
+                blendMode: 'normal'
+            },
+            tint: {
+                enabled: false,
+                color: '#ffffff',
+                opacity: 0.2,
+                blendMode: 'overlay'
+            },
+            noise: {
+                enabled: false,
+                opacity: 0.3,
+                blendMode: 'multiply'
+            }    
+        },
+        subtle: {
+            blur: {
+                enabled: true,
+                direction: 'bottom',
+                height: '30%',
+                layers: 4,
+                maxBlur: 362,
+                startOpacity: 0,
+                endOpacity: 0.8,
+                position: 'bottom',
+                curve: [0.37, 0.595, 0.63, 0.566]
+            },
+            luminosity: {
+                enabled: true,
+                brightness: 1.2,
+                contrast: 1.1,
+                saturate: 1.1,
+                opacity: 0.7,
+                blendMode: 'overlay'
+            },
+            tint: {
+                enabled: true,
+                color: '#ffffff',
+                gradient: null,
+                opacity: 0.15,
+                blendMode: 'overlay'
+            },
+            noise: {
+                enabled: true,
+                opacity: 1,
+                blendMode: 'overlay'
+            }
+        }
+      };
+
+      if (presets[preset]) {
+        currentSettings = { ...presets[preset] };
+        
+        // Update bezier curve display
+        const curve = currentSettings.blur.curve;
+        bezierPoints.p1.x = curve[0] * 280;
+        bezierPoints.p1.y = (1 - curve[1]) * 280;
+        bezierPoints.p2.x = curve[2] * 280;
+        bezierPoints.p2.y = (1 - curve[3]) * 280;
+        drawBezierEditor();
+        
+        initializeControls();
+        updateBlur();
+      }
+    }
+  </script>
+</body>
+</html> 
