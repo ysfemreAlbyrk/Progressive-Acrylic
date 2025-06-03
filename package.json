@@ -51,12 +51,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ysfemreAlbyrk/progressive-acrylic.git"
+    "url": "https://github.com/ysfemreAlbyrk/Progressive-Acrylic.git"
   },
   "bugs": {
-    "url": "https://github.com/ysfemreAlbyrk/progressive-acrylic/issues"
+    "url": "https://github.com/ysfemreAlbyrk/Progressive-Acrylic/issues"
   },
-  "homepage": "https://github.com/ysfemreAlbyrk/progressive-acrylic#readme",
+  "homepage": "https://github.com/ysfemreAlbyrk/Progressive-Acrylic#readme",
   "engines": {
     "node": ">=12.0.0"
   },
