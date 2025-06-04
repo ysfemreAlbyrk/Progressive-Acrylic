@@ -1,18 +1,26 @@
 <p align="center">
-  <img src="assets/logo.png" alt="logo" style="border-radius: 30px;" height="150px">
+  <img src="https://raw.githubusercontent.com/ysfemreAlbyrk/Progressive-Acrylic/refs/heads/main/assets/logo.png" alt="logo" height="150px">
 <h1 align="center">Progressive Acrylic</h1>
 </p>
 
 🎨 **Advanced layered acrylic glass and progressive (guassian) blur effects** for web elements. Create iOS/Windows-style acrylic blur overlays with multiple customizable layers: blur, luminosity, tint, and noise.
 
-![License](https://img.shields.io/badge/license-MIT-green) ![Version](https://img.shields.io/badge/version-1.0.0-orange)
+![License](https://img.shields.io/badge/license-MIT-green) ![Version](https://img.shields.io/badge/version-2.0.1-orange)
+
+---
+
+<h4 align="center"><a href="https://ysfemrealbyrk.github.io/Progressive-Acrylic/acrylic-editor.html">Progressive Acrylic Editor</a></p>
+
+I created an interactive editor since it might be challenging for beginners to use the library directly.
+
+---
 
 ## 🎯 Project Purpose
 
 Progressive Acrylic aims to bring sophisticated acrylic glass and progressive blur effects to web interfaces, inspired by both iOS and Windows design languages. The library provides a powerful yet easy-to-use solution for creating layered blur effects that can enhance the visual hierarchy and depth of web applications.
 
-![Progressive Acrylic Demo](assets/img1.png)
-![Progressive Acrylic Demo](assets/img2.png)
+![Progressive Acrylic Demo](https://raw.githubusercontent.com/ysfemreAlbyrk/Progressive-Acrylic/refs/heads/main/assets/img1.png)
+![Progressive Acrylic Demo](https://raw.githubusercontent.com/ysfemreAlbyrk/Progressive-Acrylic/refs/heads/main/assets/img2.png)
 
 The project focuses on:
 - Creating natural, iOS-style progressive blur transitions
@@ -33,7 +41,7 @@ Progressive blur creates a natural feathering effect where the blur intensity gr
 
 Later, the project evolved to implement **Microsoft Windows Acrylic design language**, following the official [Windows Acrylic Material guidelines](https://learn.microsoft.com/en-us/windows/apps/design/style/acrylic). The Windows acrylic system uses a sophisticated 4-layer approach that combines blur, luminosity adjustments, color tinting, and noise texture to create the distinctive frosted glass appearance.
 
-![Acrylic Layer System](assets/acrylic-layer-diagram.jpg)
+![Acrylic Layer System](https://raw.githubusercontent.com/ysfemreAlbyrk/Progressive-Acrylic/refs/heads/main/assets/acrylic-layer-diagram.jpg)
 
 *The Windows Acrylic layer system: Desktop background → Gaussian blur → Luminosity blend → Tint/Color blend → Noise texture*
 

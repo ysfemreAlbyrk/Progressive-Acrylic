@@ -1,6 +1,6 @@
 {
   "name": "progressive-acrylic",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Advanced layered acrylic glass effects for web elements. Create iOS/Windows-style acrylic blur overlays with multiple customizable layers: blur, luminosity, tint, and noise.",
   "main": "progressive-acrylic.js",
   "types": "progressive-acrylic.d.ts",
