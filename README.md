@@ -9,7 +9,7 @@
 
 ---
 
-<h4 align="center"><a href="https://ysfemrealbyrk.github.io/Progressive-Acrylic/acrylic-editor.html">Progressive Acrylic Editor</a><a href="https://ysfemrealbyrk.github.io/Progressive-Acrylic/docs">Docs</a></h4>
+<h4 align="center"><a href="https://ysfemrealbyrk.github.io/Progressive-Acrylic/acrylic-editor.html">Progressive Acrylic Editor</a> | <a href="https://ysfemrealbyrk.github.io/Progressive-Acrylic/docs">Docs</a></h4>
 
 I created an interactive editor since it might be challenging for beginners to use the library directly.
 
