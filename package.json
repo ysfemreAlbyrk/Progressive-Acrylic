@@ -1,6 +1,6 @@
 {
   "name": "progressive-acrylic",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Advanced layered acrylic glass effects for web elements. Create iOS/Windows-style acrylic blur overlays with multiple customizable layers: blur, luminosity, tint, and noise.",
   "main": "progressive-acrylic.js",
   "types": "progressive-acrylic.d.ts",
@@ -9,12 +9,13 @@
     "progressive-acrylic.d.ts",
     "acrylic-editor.html",
     "README.md",
+    "CHANGELOG.md",
+    "LICENSE",
     "docs/**/*"
   ],
   "scripts": {
     "demo": "open acrylic-editor.html",
-    "editor": "open acrylic-editor.html",
-    "prepublishOnly": "echo 'Publishing Progressive Acrylic v2.0.0'"
+    "editor": "open acrylic-editor.html"
   },
   "keywords": [
     "acrylic",
@@ -45,9 +46,14 @@
     "react",
     "vue",
     "angular",
-    "svelte"
+    "svelte",
+    "typescript"
   ],
-  "author": "Yusuf Emre Albayrak",
+  "author": {
+    "name": "Yusuf Emre Albayrak",
+    "email": "ysfemrealbayrak@gmail.com",
+    "url": "https://github.com/ysfemreAlbyrk"
+  },
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -56,7 +62,11 @@
   "bugs": {
     "url": "https://github.com/ysfemreAlbyrk/Progressive-Acrylic/issues"
   },
-  "homepage": "https://github.com/ysfemreAlbyrk/Progressive-Acrylic#readme",
+  "homepage": "https://ysfemrealbyrk.github.io/Progressive-Acrylic/docs",
+  "funding": {
+    "type": "github",
+    "url": "https://github.com/sponsors/ysfemreAlbyrk"
+  },
   "engines": {
     "node": ">=12.0.0"
   },
